@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Actions">
+<title>Actions</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0f;
+  --surface: #18181c;
+  --surface2: #222228;
+  --border: rgba(255,255,255,0.07);
+  --text: #f0f0f2;
+  --muted: rgba(240,240,242,0.45);
+  --hint: rgba(240,240,242,0.2);
+  --green: #2dce8a;
+  --blue: #5b9cf6;
+  --purple: #a78bfa;
+  --amber: #f59e0b;
+  --red: #f87171;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; }
+.app { display: flex; flex-direction: column; height: 100%; max-width: 430px; margin: 0 auto; }
+.navbar { padding: calc(var(--safe-top) + 14px) 20px 0; flex-shrink: 0; }
+.nav-title { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; font-family: 'DM Mono', monospace; }
+.nav-sub { font-size: 22px; font-weight: 500; color: var(--text); }
+.tabs { display: flex; gap: 4px; padding: 16px 20px 12px; flex-shrink: 0; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex-shrink: 0; padding: 7px 14px; font-size: 13px; font-weight: 500; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all .2s; font-family: 'DM Sans', sans-serif; }
+.tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.content { flex: 1; overflow-y: auto; padding: 0 20px calc(var(--safe-bottom) + 20px); scrollbar-width: none; }
+.content::-webkit-scrollbar { display: none; }
+.page { display: none; }
+.page.active { display: block; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; margin-bottom: 14px; }
+.card-label { font-size: 11px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: 12px; }
+
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+.summary-label { font-size: 11px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: 4px; }
+.summary-val { font-size: 28px; font-weight: 500; font-family: 'DM Mono', monospace; }
+.summary-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+.stock-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.stock-item:last-child { border-bottom: none; }
+.stock-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.stock-left {}
+.stock-ticker { font-size: 15px; font-weight: 500; font-family: 'DM Mono', monospace; letter-spacing: .04em; }
+.stock-name { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.stock-right { text-align: right; }
+.stock-price { font-size: 15px; font-weight: 500; font-family: 'DM Mono', monospace; }
+.stock-price-loading { font-size: 13px; color: var(--muted); font-family: 'DM Mono', monospace; }
+.stock-pnl { font-size: 12px; font-family: 'DM Mono', monospace; margin-top: 2px; }
+.stock-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.reco-badge { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; }
+.stock-actions { display: flex; align-items: center; gap: 8px; }
+.stock-meta { font-size: 11px; color: var(--muted); }
+.del-btn { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: var(--red); font-size: 14px; cursor: pointer; padding: 4px 9px; border-radius: 8px; font-weight: 500; line-height: 1; }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+.stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+.stat-val { font-size: 20px; font-weight: 500; font-family: 'DM Mono', monospace; }
+
+.field { margin-bottom: 10px; }
+.field label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; }
+.field input, .field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 15px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; -webkit-appearance: none; }
+.field input::placeholder { color: var(--hint); }
+.field-row { display: flex; gap: 8px; }
+.field-row .field { flex: 1; }
+.btn { width: 100%; padding: 14px; font-size: 15px; font-weight: 500; border-radius: 14px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity .2s, transform .1s; }
+.btn:active { transform: scale(.98); opacity: .85; }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-green { background: var(--green); color: #0a1a12; }
+.btn-blue { background: var(--blue); color: #08102a; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+
+.alert-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.alert-item:last-child { border-bottom: none; }
+.alert-ticker { font-size: 14px; font-weight: 500; font-family: 'DM Mono', monospace; }
+.alert-pnl { font-size: 13px; font-family: 'DM Mono', monospace; }
+
+.perf-item { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.perf-item:last-child { border-bottom: none; }
+.perf-ticker { font-size: 14px; font-weight: 500; font-family: 'DM Mono', monospace; }
+.perf-name { font-size: 12px; color: var(--muted); }
+.perf-right { text-align: right; }
+.perf-pnl { font-size: 14px; font-family: 'DM Mono', monospace; }
+.perf-reco { font-size: 11px; margin-top: 2px; }
+
+.info-box { background: rgba(91,156,246,0.07); border: 1px solid rgba(91,156,246,0.18); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; color: var(--muted); line-height: 1.65; }
+.info-box a { color: var(--blue); text-decoration: none; }
+.saved-hint { font-size: 12px; color: var(--green); font-family: 'DM Mono', monospace; text-align: center; padding-top: 8px; display: none; }
+.empty { font-size: 14px; color: var(--muted); text-align: center; padding: 24px 0; }
+.bar-track { height: 4px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; margin-top: 8px; }
+.bar-fill { height: 100%; border-radius: 99px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+@keyframes blink { 0%,100%{opacity:.25} 50%{opacity:1} }
+.loading { animation: blink 1.2s infinite; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="navbar">
+    <div class="nav-title">Mon portefeuille</div>
+    <div class="nav-sub" id="nav-date"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('portefeuille',this)">Portefeuille</button>
+    <button class="tab" onclick="showTab('performance',this)">Performance</button>
+    <button class="tab" onclick="showTab('reglages',this)">Réglages</button>
+  </div>
+  <div class="content">
+
+    <!-- PORTEFEUILLE -->
+    <div id="tab-portefeuille" class="page active">
+      <div class="summary-card">
+        <div>
+          <div class="summary-label">Rendement moyen</div>
+          <div class="summary-val" id="sum-pnl">— %</div>
+          <div class="summary-sub" id="sum-sub">0 position</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <button class="btn btn-blue" id="refresh-btn" style="width:auto;padding:8px 18px;font-size:13px;margin:0" onclick="refreshAll()">Actualiser</button>
+          <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace" id="last-update"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Positions</div>
+        <div id="stocks-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Ajouter une action</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Ticker</label>
+            <input type="text" id="new-ticker" placeholder="AAPL, MC.PA…" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+          <div class="field" style="max-width:90px">
+            <label>Quantité</label>
+            <input type="number" id="new-qty" placeholder="10" inputmode="decimal" min="0">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Nom (optionnel)</label>
+            <input type="text" id="new-name" placeholder="Apple, LVMH…">
+          </div>
+          <div class="field" style="max-width:120px">
+            <label>Prix d'achat</label>
+            <input type="number" id="new-buy" placeholder="150.00" inputmode="decimal" min="0" step="0.01">
+          </div>
+        </div>
+        <button class="btn btn-green" onclick="addStock()">Ajouter</button>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div id="tab-performance" class="page">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-lbl">Positions</div><div class="stat-val" id="perf-count">0</div></div>
+        <div class="stat-card"><div class="stat-lbl">Rendement moy.</div><div class="stat-val" id="perf-avg">—</div></div>
+        <div class="stat-card"><div class="stat-lbl">Meilleure</div><div class="stat-val" id="perf-best">—</div></div>
+        <div class="stat-card"><div class="stat-lbl">Pire</div><div class="stat-val" id="perf-worst">—</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Alertes du jour</div>
+        <div id="alerts-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Toutes les positions</div>
+        <div id="perf-list"></div>
+      </div>
+    </div>
+
+    <!-- RÉGLAGES -->
+    <div id="tab-reglages" class="page">
+      <div class="info-box">
+        Clé API gratuite sur <a href="https://www.alphavantage.co/support/#api-key" target="_blank">alphavantage.co</a>.<br>
+        Quota : 25 requêtes / jour · 5 / minute.<br>
+        Pour les actions françaises, utilise le suffixe <strong style="color:var(--text)">.PA</strong> (ex : <em>MC.PA</em> pour LVMH).
+      </div>
+      <div class="card">
+        <div class="card-label">Clé API Alpha Vantage</div>
+        <div class="field">
+          <label>Clé API</label>
+          <input type="text" id="api-key-input" placeholder="Entre ta clé ici…" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <button class="btn btn-green" onclick="saveApiKey()">Enregistrer</button>
+        <div class="saved-hint" id="api-saved">✓ Clé enregistrée</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Seuils de recommandation</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Vendre si rendement ≥ (%)</label>
+            <input type="number" id="thresh-sell" inputmode="decimal" min="1" max="500">
+          </div>
+          <div class="field">
+            <label>Racheter si perte ≥ (%)</label>
+            <input type="number" id="thresh-buy" inputmode="decimal" min="1" max="99">
+          </div>
+        </div>
+        <button class="btn btn-green" onclick="saveThresholds()">Enregistrer</button>
+        <div class="saved-hint" id="thresh-saved">✓ Seuils mis à jour</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const now = new Date();
+document.getElementById('nav-date').textContent = DAYS[now.getDay()] + ' ' + now.getDate() + ' ' + MOIS[now.getMonth()];
+
+function ls(k, d) { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : d; } catch { return d; } }
+function ss(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+
+let stocks = ls('a_stocks', []);
+let apiKey = ls('a_apikey', '');
+let thresholds = ls('a_thresh', { sell: 20, buy: 10 });
+
+const COLORS = ['#2dce8a','#5b9cf6','#a78bfa','#f59e0b','#f87171','#06b6d4','#ec4899','#84cc16','#fb923c','#c084fc'];
+
+function getColor(i) { return COLORS[i % COLORS.length]; }
+
+function getReco(buyPrice, currentPrice) {
+  if (!currentPrice || currentPrice <= 0) return { label: '—', color: 'var(--muted)', bg: 'rgba(255,255,255,0.05)' };
+  const pct = (currentPrice - buyPrice) / buyPrice * 100;
+  if (pct >= thresholds.sell)  return { label: 'Vendre partiellement', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' };
+  if (pct <= -thresholds.buy)  return { label: 'Racheter', color: '#2dce8a', bg: 'rgba(45,206,138,0.1)' };
+  return { label: 'Conserver', color: '#5b9cf6', bg: 'rgba(91,156,246,0.1)' };
+}
+
+function pnlPct(s) {
+  if (!s.currentPrice || s.currentPrice <= 0) return null;
+  return (s.currentPrice - s.buyPrice) / s.buyPrice * 100;
+}
+
+function fmtPct(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
+function fmtPrice(n) { return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+function showTab(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'performance') renderPerf();
+  if (id === 'reglages') loadSettings();
+}
+
+// ── RENDER STOCKS ────────────────────────────────────────────────────────────
+function renderStocks() {
+  const el = document.getElementById('stocks-list');
+  if (!stocks.length) { el.innerHTML = '<div class="empty">Aucune action ajoutée</div>'; updateSummary(); return; }
+
+  el.innerHTML = stocks.map((s, i) => {
+    const pct = pnlPct(s);
+    const reco = getReco(s.buyPrice, s.currentPrice);
+    const color = getColor(i);
+    const pnlColor = pct === null ? 'var(--muted)' : pct >= 0 ? 'var(--green)' : 'var(--red)';
+    const priceHtml = s.currentPrice
+      ? `<div class="stock-price">${fmtPrice(s.currentPrice)}</div><div class="stock-pnl" style="color:${pnlColor}">${pct !== null ? fmtPct(pct) : '—'}</div>`
+      : `<div class="stock-price-loading">Prix non chargé</div>`;
+    const barPct = pct !== null ? Math.min(100, Math.abs(pct) / thresholds.sell * 100) : 0;
+    const barColor = pct === null ? 'rgba(255,255,255,0.15)' : pct >= 0 ? 'var(--green)' : 'var(--red)';
+
+    return `<div class="stock-item">
+      <div class="stock-top">
+        <div class="stock-left">
+          <div class="stock-ticker" style="color:${color}">${s.ticker}</div>
+          <div class="stock-name">${s.name || '—'} · ${s.qty} action${s.qty > 1 ? 's' : ''} · Achat ${fmtPrice(s.buyPrice)}</div>
+        </div>
+        <div class="stock-right">${priceHtml}</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;background:${barColor}"></div></div>
+      <div class="stock-bottom">
+        <span class="reco-badge" style="color:${reco.color};background:${reco.bg}">${reco.label}</span>
+        <div class="stock-actions">
+          <span class="stock-meta">${s.updatedAt ? new Date(s.updatedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : ''}</span>
+          <button class="del-btn" onclick="deleteStock(${i})">×</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  updateSummary();
+}
+
+function updateSummary() {
+  const withPrice = stocks.filter(s => s.currentPrice);
+  const pcts = withPrice.map(s => pnlPct(s)).filter(p => p !== null);
+  const avg = pcts.length ? pcts.reduce((a, v) => a + v, 0) / pcts.length : null;
+  const sumEl = document.getElementById('sum-pnl');
+  const subEl = document.getElementById('sum-sub');
+  if (avg !== null) {
+    sumEl.textContent = fmtPct(avg);
+    sumEl.style.color = avg >= 0 ? 'var(--green)' : 'var(--red)';
+  } else {
+    sumEl.textContent = '— %';
+    sumEl.style.color = 'var(--text)';
+  }
+  subEl.textContent = stocks.length + ' position' + (stocks.length > 1 ? 's' : '') + (withPrice.length < stocks.length && stocks.length > 0 ? ' · ' + (stocks.length - withPrice.length) + ' sans prix' : '');
+}
+
+// ── RENDER PERFORMANCE ───────────────────────────────────────────────────────
+function renderPerf() {
+  const withPrice = stocks.filter(s => s.currentPrice);
+  const pcts = withPrice.map(s => ({ ...s, pct: pnlPct(s) })).filter(s => s.pct !== null);
+
+  document.getElementById('perf-count').textContent = stocks.length;
+
+  if (pcts.length) {
+    const avg = pcts.reduce((a, s) => a + s.pct, 0) / pcts.length;
+    const best = pcts.reduce((a, s) => s.pct > a.pct ? s : a);
+    const worst = pcts.reduce((a, s) => s.pct < a.pct ? s : a);
+    const avgEl = document.getElementById('perf-avg');
+    avgEl.textContent = fmtPct(avg);
+    avgEl.style.color = avg >= 0 ? 'var(--green)' : 'var(--red)';
+    const bestEl = document.getElementById('perf-best');
+    bestEl.textContent = best.ticker + ' ' + fmtPct(best.pct);
+    bestEl.style.color = 'var(--green)';
+    const worstEl = document.getElementById('perf-worst');
+    worstEl.textContent = worst.ticker + ' ' + fmtPct(worst.pct);
+    worstEl.style.color = 'var(--red)';
+  } else {
+    ['perf-avg','perf-best','perf-worst'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+      document.getElementById(id).style.color = 'var(--muted)';
+    });
+  }
+
+  // Alertes : positions qui ont une recommandation non-Conserver
+  const alerts = pcts.filter(s => {
+    const r = getReco(s.buyPrice, s.currentPrice);
+    return r.label !== 'Conserver' && r.label !== '—';
+  });
+  const alertsEl = document.getElementById('alerts-list');
+  if (!alerts.length) {
+    alertsEl.innerHTML = '<div class="empty">Aucune alerte — tout est à conserver</div>';
+  } else {
+    alertsEl.innerHTML = alerts.map(s => {
+      const reco = getReco(s.buyPrice, s.currentPrice);
+      return `<div class="alert-item">
+        <div>
+          <div class="alert-ticker">${s.ticker} <span style="font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif">${s.name || ''}</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Achat ${fmtPrice(s.buyPrice)} → Actuel ${fmtPrice(s.currentPrice)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="alert-pnl" style="color:${s.pct >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtPct(s.pct)}</div>
+          <div class="reco-badge" style="color:${reco.color};background:${reco.bg};display:inline-block;margin-top:4px">${reco.label}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Liste complète triée par P&L
+  const perfEl = document.getElementById('perf-list');
+  if (!stocks.length) { perfEl.innerHTML = '<div class="empty">Aucune position</div>'; return; }
+  const sorted = [...stocks].map((s, i) => ({ ...s, origIdx: i, pct: pnlPct(s) }))
+    .sort((a, b) => (b.pct ?? -Infinity) - (a.pct ?? -Infinity));
+  perfEl.innerHTML = sorted.map((s, i) => {
+    const pctColor = s.pct === null ? 'var(--muted)' : s.pct >= 0 ? 'var(--green)' : 'var(--red)';
+    const reco = getReco(s.buyPrice, s.currentPrice);
+    return `<div class="perf-item">
+      <div>
+        <div class="perf-ticker" style="color:${getColor(s.origIdx)}">${s.ticker}</div>
+        <div class="perf-name">${s.name || '—'} · ${s.qty} action${s.qty > 1 ? 's' : ''}</div>
+      </div>
+      <div class="perf-right">
+        <div class="perf-pnl" style="color:${pctColor}">${s.pct !== null ? fmtPct(s.pct) : '—'}</div>
+        <div class="perf-reco" style="color:${reco.color}">${reco.label}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ADD / DELETE ─────────────────────────────────────────────────────────────
+function addStock() {
+  const ticker = document.getElementById('new-ticker').value.trim().toUpperCase();
+  const qty    = parseFloat(document.getElementById('new-qty').value);
+  const name   = document.getElementById('new-name').value.trim();
+  const buy    = parseFloat(document.getElementById('new-buy').value);
+  if (!ticker || !qty || qty <= 0 || !buy || buy <= 0) return;
+  if (stocks.find(s => s.ticker === ticker)) { alert('Cette action est déjà dans ton portefeuille.'); return; }
+  stocks.push({ ticker, name, qty, buyPrice: buy, currentPrice: null, updatedAt: null });
+  ss('a_stocks', stocks);
+  document.getElementById('new-ticker').value = '';
+  document.getElementById('new-qty').value = '';
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-buy').value = '';
+  renderStocks();
+}
+
+function deleteStock(i) {
+  stocks.splice(i, 1);
+  ss('a_stocks', stocks);
+  renderStocks();
+}
+
+// ── API / REFRESH ────────────────────────────────────────────────────────────
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function fetchPrice(ticker) {
+  try {
+    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(ticker)}&apikey=${encodeURIComponent(apiKey)}`;
+    const res = await fetch(url);
+    if (!res.ok) return { status: 'error' };
+    const data = await res.json();
+    if (data['Note'] || data['Information']) return { status: 'rate_limit' };
+    const price = parseFloat(data['Global Quote']?.['05. price']);
+    if (isNaN(price)) return { status: 'not_found' };
+    return { status: 'ok', price };
+  } catch {
+    return { status: 'error' };
+  }
+}
+
+async function refreshAll() {
+  if (!apiKey) {
+    alert('Entre ta clé API dans l\'onglet Réglages d\'abord.');
+    return;
+  }
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled = true;
+
+  let rateLimited = false;
+  for (let i = 0; i < stocks.length; i++) {
+    btn.textContent = `${i + 1} / ${stocks.length}`;
+    const result = await fetchPrice(stocks[i].ticker);
+
+    if (result.status === 'rate_limit') {
+      rateLimited = true;
+      btn.textContent = 'Pause…';
+      // Attendre 60s puis reprendre
+      await sleep(60000);
+      i--; // Retry same stock
+      rateLimited = false;
+      continue;
+    }
+    if (result.status === 'ok') {
+      stocks[i].currentPrice = result.price;
+      stocks[i].updatedAt = Date.now();
+    }
+    if (i < stocks.length - 1) await sleep(300);
+  }
+
+  ss('a_stocks', stocks);
+  btn.disabled = false;
+  btn.textContent = 'Actualiser';
+  const t = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('last-update').textContent = 'MAJ à ' + t;
+  renderStocks();
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────────────────────
+function loadSettings() {
+  document.getElementById('api-key-input').value = apiKey;
+  document.getElementById('thresh-sell').value = thresholds.sell;
+  document.getElementById('thresh-buy').value = thresholds.buy;
+}
+
+function saveApiKey() {
+  apiKey = document.getElementById('api-key-input').value.trim();
+  ss('a_apikey', apiKey);
+  const hint = document.getElementById('api-saved');
+  hint.style.display = 'block';
+  setTimeout(() => hint.style.display = 'none', 2000);
+}
+
+function saveThresholds() {
+  const sell = parseFloat(document.getElementById('thresh-sell').value);
+  const buy  = parseFloat(document.getElementById('thresh-buy').value);
+  if (!sell || sell <= 0 || !buy || buy <= 0) return;
+  thresholds = { sell, buy };
+  ss('a_thresh', thresholds);
+  const hint = document.getElementById('thresh-saved');
+  hint.style.display = 'block';
+  setTimeout(() => hint.style.display = 'none', 2000);
+  renderStocks();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+renderStocks();
+</script>
+</body>
+</html>
